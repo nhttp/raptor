@@ -34,7 +34,7 @@ type TVerb =
   | "ROUTER";
 const _err = (err: TError) =>
   new Response(
-    err.message,
+    "ERROR: " + err.message,
     { status: err.status || 500 },
   );
 /**
@@ -82,8 +82,17 @@ export function raptor<Ctx extends TContext = TContext>({
         }
       }
       fns = wares.concat(fns, [on404]);
-      const next: TNext = (err) =>
-        err ? onError(err, ctx, next) : fns[i++](ctx, next);
+      const next: TNext = (err) => {
+        let res: Response | Promise<Response>;
+        try {
+          res = err ? onError(err, ctx, next) : fns[i++](ctx, next);
+        } catch (e) {
+          return err ? onError(e, ctx, next) : next(e);
+        }
+        return (res as Promise<Response>).then
+          ? (res as Promise<Response>).then(void 0).catch(next)
+          : res;
+      };
       return next();
     },
     /**

@@ -1,16 +1,16 @@
 import { serve } from "https://deno.land/std@0.118.0/http/server.ts";
 import { raptor, TContext } from "../mod.ts";
 
+type Ctx = TContext & {
+  json: (
+    // deno-lint-ignore no-explicit-any
+    data: Record<string, any>,
+    status?: number,
+  ) => Response | Promise<Response>;
+};
+
 serve(
-  raptor<
-    TContext & {
-      json: (
-        // deno-lint-ignore no-explicit-any
-        data: Record<string, any>,
-        status?: number,
-      ) => Response | Promise<Response>;
-    }
-  >()
+  raptor<Ctx>()
     // make global middleware ctx.json
     .make("WARE", (ctx, next) => {
       ctx.json = (data, status = 200) => {
