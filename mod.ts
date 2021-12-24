@@ -89,9 +89,10 @@ export function raptor<Ctx extends TContext = TContext>({
         } catch (e) {
           return err ? onError(e, ctx, next) : next(e);
         }
-        return (res as Promise<Response>).then
-          ? (res as Promise<Response>).then(void 0).catch(next)
-          : res;
+        return res &&
+          ((res as Promise<Response>).then
+            ? (res as Promise<Response>).then(void 0).catch(next)
+            : res);
       };
       return next();
     },
