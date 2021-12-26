@@ -6,7 +6,7 @@
 ![deps badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Fdep-count%2Fhttps%2Fdeno.land%2Fx%2Fraptor%2Fmod.ts)
 ![cache badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Fcache-size%2Fhttps%2Fdeno.land%2Fx%2Fraptor%2Fmod.ts)
 
-Simple and small, router handler for [Deno](https://deno.land/) server and
+Fast router handler for [Deno](https://deno.land/) server and
 [Deploy](https://deno.com/deploy).
 
 > Raptor implemented to [nhttp](https://nhttp.deno.dev)
@@ -19,17 +19,17 @@ Simple and small, router handler for [Deno](https://deno.land/) server and
 ## Usage
 
 ```ts
-import { serve } from "https://deno.land/std@0.118.0/http/server.ts";
-import { raptor } from "https://deno.land/x/raptor@0.0.4/mod.ts";
+import { serve } from 'https://deno.land/std@0.118.0/http/server.ts';
+import { raptor } from 'https://deno.land/x/raptor@0.0.4/mod.ts';
 
 serve(
-  raptor()
-    .make("GET", () => new Response("Hello World"))
-    .make("GET/hello/:name", (ctx) => new Response(`Hello ${ctx.params.name}`))
-    .resolve,
+	raptor()
+		.make('GET', () => new Response('Hello World'))
+		.make('GET/hello/:name', (req) => new Response(`Hello ${req.params.name}`))
+		.resolve,
 );
 
-console.log("Raptor was here !!");
+console.log('Raptor was here !!');
 ```
 
 ## Run
@@ -52,9 +52,9 @@ and path.
 
 ```ts
 serve(
-  raptor()
-    .make("GET/hello/:name", (ctx) => new Response(`Hello ${ctx.params.name}`))
-    .resolve,
+	raptor()
+		.make('GET/hello/:name', (req) => new Response(`Hello ${req.params.name}`))
+		.resolve,
 );
 ```
 
@@ -62,13 +62,13 @@ serve(
 
 ```ts
 serve(
-  raptor()
-    .make("WARE", (ctx, next) => {
-      ctx.foo = "foo";
-      return next();
-    })
-    .make("GET/hello", (ctx) => new Response(`Hello ${ctx.foo}`))
-    .resolve,
+	raptor()
+		.make('WARE', (req, next) => {
+			req.foo = 'foo';
+			return next();
+		})
+		.make('GET/hello', (req) => new Response(`Hello ${req.foo}`))
+		.resolve,
 );
 ```
 
@@ -76,14 +76,14 @@ serve(
 
 ```ts
 serve(
-  raptor()
-    .make("GET/hello", (ctx, next) => {
-      ctx.foo = "foo";
-      return next();
-    }, (ctx) => {
-      return new Response(`Hello ${ctx.foo}`);
-    })
-    .resolve,
+	raptor()
+		.make('GET/hello', (req, next) => {
+			req.foo = 'foo';
+			return next();
+		}, (req) => {
+			return new Response(`Hello ${req.foo}`);
+		})
+		.resolve,
 );
 ```
 
@@ -91,12 +91,12 @@ serve(
 
 ```ts
 const router = raptor.createRouter();
-router.make("GET/user", () => new Response("Hello from router"));
+router.make('GET/user', () => new Response('Hello from router'));
 
 serve(
-  raptor()
-    .make("ROUTER/api/v1", [router])
-    .resolve,
+	raptor()
+		.make('ROUTER/api/v1', [router])
+		.resolve,
 );
 
 // visit http://localhost:8000/api/v1/user
@@ -108,13 +108,13 @@ Global error response.
 
 ```ts
 serve(
-  raptor()
-    // example
-    .make(
-      "ERROR",
-      (err, ctx) => new Response(err.message, { status: err.status || 500 }),
-    )
-    .resolve,
+	raptor()
+		// example
+		.make(
+			'ERROR',
+			(err, req) => new Response(err.message, { status: err.status || 500 }),
+		)
+		.resolve,
 );
 ```
 
@@ -124,10 +124,10 @@ Global 404 response.
 
 ```ts
 serve(
-  raptor()
-    // example
-    .make("404", (ctx) => new Response("404 not found url", { status: 404 }))
-    .resolve,
+	raptor()
+		// example
+		.make('404', (req) => new Response('404 not found url', { status: 404 }))
+		.resolve,
 );
 ```
 
