@@ -20,7 +20,7 @@ Fast router handler for [Deno](https://deno.land/) server and
 
 ```ts
 import { serve } from "https://deno.land/std@0.118.0/http/server.ts";
-import { raptor, JsonResponse } from "https://deno.land/x/raptor@0.0.5/mod.ts";
+import { JsonResponse, raptor } from "https://deno.land/x/raptor@0.0.5/mod.ts";
 
 serve(
   raptor()
@@ -39,7 +39,8 @@ console.log("Raptor was here !!");
 deno run --allow-net file.ts
 ```
 
-and visit `http://localhost:8000` with path `/` or `/hello-json` or `/hello/yourname`
+and visit `http://localhost:8000` with path `/` or `/hello-json` or
+`/hello/yourname`
 
 ## Make
 

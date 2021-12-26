@@ -11,7 +11,7 @@ serve(
     .make("WARE", (request, next) =>
       serveFile({
         request,
-        respondWith: request.respondWith,
+        respondWith: (r: Response) => r,
       }, next))
     .resolve,
 );
