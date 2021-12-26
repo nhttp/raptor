@@ -1,13 +1,14 @@
 {
   "lint": {
     "files": {
-      "exclude": ["mod.js"]
+      "exclude": ["mod.js", "dev.ts"]
     }
   },
   "fmt": {
     "files": {
       "exclude": [
-        "mod.js"
+        "mod.js",
+        "dev.ts"
       ]
     }
   }

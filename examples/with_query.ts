@@ -4,7 +4,7 @@ import { raptor } from "../mod.ts";
 serve(
   raptor()
     .make("GET/hello", (req) => {
-      const query = new URLSearchParams(req.parsedUrl.query);
+      const query = new URL(req.url).searchParams;
       return new Response(`Hello ${query.get("name")}`);
     })
     .resolve,

@@ -5,11 +5,6 @@ export type NextFunc = (err?: TError) => Response | Promise<Response>;
 export type HttpRequest = Request & {
   params: TObject;
   conn: TObject;
-  parsedUrl: {
-    url: string;
-    pathname: string;
-    query: string;
-  };
   // deno-lint-ignore no-explicit-any
   [k: string]: any;
 };
@@ -39,22 +34,16 @@ const _err = (err: TError) =>
     { status: err.status || 500 },
   );
 const JSON_TYPE_CHARSET = "application/json; charset=utf-8";
-const mutateUrl = (obj: TObject) => {
+const findPath = (str: string) => {
   const idx = [];
   let i = -1;
-  while ((i = obj.url.indexOf("/", i + 1)) != -1) {
+  while ((i = str.indexOf("/", i + 1)) != -1) {
     idx.push(i);
     if (idx.length === 3) break;
   }
-  const ob = {} as TObject;
-  ob.url = ob.pathname = obj.url.substring(idx[2]);
-  ob.query = "";
-  const x = ob.url.indexOf("?");
-  if (x !== -1) {
-    ob.pathname = ob.url.substring(0, x);
-    ob.query = ob.url.substring(x + 1);
-  }
-  obj.parsedUrl = ob;
+  const path = str.substring(idx[2]), iof = path.indexOf("?");
+  if (iof !== -1) return path.substring(0, iof);
+  return path;
 };
 /**
  * initial raptor
@@ -84,13 +73,13 @@ export function raptor<Req extends HttpRequest = HttpRequest>({
       const req = request as Req;
       req.params = {};
       req.conn = conn || {};
-      mutateUrl(req);
+      const path = findPath(req.url);
       let fns: Handler<Req>[] = [], routes = route[req.method] || [], i = 0;
       if (route["ANY"]) routes = route["ANY"].concat(routes);
       for (const [handlers, pattern, isParams] of routes) {
-        if (pattern.test(req.parsedUrl.pathname)) {
+        if (pattern.test(path)) {
           if (isParams) {
-            req.params = pattern.exec(req.parsedUrl.pathname).groups || {};
+            req.params = pattern.exec(path).groups || {};
           }
           fns = handlers;
           break;
@@ -180,6 +169,7 @@ export function raptor<Req extends HttpRequest = HttpRequest>({
       return this;
     },
     getRoute: () => route,
+    getWares: () => wares,
   };
 }
 
