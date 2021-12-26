@@ -5,6 +5,11 @@ export type NextFunc = (err?: TError) => Response | Promise<Response>;
 export type HttpRequest = Request & {
   params: TObject;
   conn: TObject;
+  parsedUrl: {
+    url: string;
+    pathname: string;
+    query: string;
+  };
   // deno-lint-ignore no-explicit-any
   [k: string]: any;
 };
@@ -34,16 +39,22 @@ const _err = (err: TError) =>
     { status: err.status || 500 },
   );
 const JSON_TYPE_CHARSET = "application/json; charset=utf-8";
-const findPath = (str: string) => {
+const mutateUrl = (obj: TObject) => {
   const idx = [];
   let i = -1;
-  while ((i = str.indexOf("/", i + 1)) != -1) {
+  while ((i = obj.url.indexOf("/", i + 1)) != -1) {
     idx.push(i);
     if (idx.length === 3) break;
   }
-  let path = str.substring(idx[2]);
-  if (path.indexOf("?") !== -1) path = path.substring(0, path.indexOf("?"));
-  return path;
+  const ob = {} as TObject;
+  ob.url = ob.pathname = obj.url.substring(idx[2]);
+  ob.query = "";
+  const x = ob.url.indexOf("?");
+  if (x !== -1) {
+    ob.pathname = ob.url.substring(0, x);
+    ob.query = ob.url.substring(x + 1);
+  }
+  obj.parsedUrl = ob;
 };
 /**
  * initial raptor
@@ -51,17 +62,16 @@ const findPath = (str: string) => {
  * raptor().make(verb, ...fns)
  */
 export function raptor<Req extends HttpRequest = HttpRequest>({
-  onError = _err,
-  on404 = _err.bind(null, { status: 404, message: "404 not found" } as TError),
-  sub = false,
-}: {
-  onError?: (
+  onError = _err as (
     err: TError,
     req: Req,
     next: NextFunc,
-  ) => Response | Promise<Response>;
-  on404?: (req: Req, next: NextFunc) => Response | Promise<Response>;
-  sub?: boolean;
+  ) => Response | Promise<Response>,
+  on404 = _err.bind(
+    null,
+    { status: 404, message: "404 not found" } as TError,
+  ) as Handler<Req>,
+  sub = false,
 } = {}) {
   const route = {} as TObject;
   let wares = [] as Handler<Req>[];
@@ -74,13 +84,13 @@ export function raptor<Req extends HttpRequest = HttpRequest>({
       const req = request as Req;
       req.params = {};
       req.conn = conn || {};
-      const path = findPath(req.url);
+      mutateUrl(req);
       let fns: Handler<Req>[] = [], routes = route[req.method] || [], i = 0;
       if (route["ANY"]) routes = route["ANY"].concat(routes);
       for (const [handlers, pattern, isParams] of routes) {
-        if (pattern.test(path)) {
+        if (pattern.test(req.parsedUrl.pathname)) {
           if (isParams) {
-            req.params = pattern.exec(path).groups || {};
+            req.params = pattern.exec(req.parsedUrl.pathname).groups || {};
           }
           fns = handlers;
           break;
