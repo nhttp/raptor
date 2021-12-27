@@ -5,6 +5,7 @@ export type NextFunc = (err?: TError) => Response | Promise<Response>;
 export type HttpRequest = Request & {
   params: TObject;
   conn: TObject;
+  path_url: string;
   // deno-lint-ignore no-explicit-any
   [k: string]: any;
 };
@@ -34,16 +35,14 @@ const _err = (err: TError) =>
     { status: err.status || 500 },
   );
 const JSON_TYPE_CHARSET = "application/json; charset=utf-8";
-const findPath = (str: string) => {
+const toPathUrl = (str: string) => {
   const idx = [];
   let i = -1;
   while ((i = str.indexOf("/", i + 1)) != -1) {
     idx.push(i);
     if (idx.length === 3) break;
   }
-  const path = str.substring(idx[2]), iof = path.indexOf("?");
-  if (iof !== -1) return path.substring(0, iof);
-  return path;
+  return str.substring(idx[2]);
 };
 /**
  * initial raptor
@@ -73,7 +72,8 @@ export function raptor<Req extends HttpRequest = HttpRequest>({
       const req = request as Req;
       req.params = {};
       req.conn = conn || {};
-      const path = findPath(req.url);
+      const url = req.path_url = toPathUrl(req.url), iof = url.indexOf("?");
+      const path = iof !== -1 ? url.substring(0, iof) : url;
       let fns: Handler<Req>[] = [], routes = route[req.method] || [], i = 0;
       if (route["ANY"]) routes = route["ANY"].concat(routes);
       for (const [handlers, pattern, isParams] of routes) {
@@ -132,12 +132,10 @@ export function raptor<Req extends HttpRequest = HttpRequest>({
         return this;
       }
       const idx = verb.indexOf("/");
-      const method = idx !== -1
-        ? verb.substring(0, verb.indexOf("/"))
-        : verb as TVerb;
-      let path = idx !== -1 ? verb.substring(verb.indexOf("/")) : "/";
+      const method = idx !== -1 ? verb.substring(0, idx) : verb as TVerb;
+      const path = idx !== -1 ? verb.substring(idx) : "/";
       if (method === "ROUTER") {
-        if (path === "/") path = "";
+        const _path = path === "/" ? "" : path;
         const _fns = [] as Handler<Req>[];
         for (let i = 0; i < fns.length; i++) {
           if (typeof fns[i] === "function") _fns.push(fns[i] as Handler<Req>);
@@ -146,7 +144,7 @@ export function raptor<Req extends HttpRequest = HttpRequest>({
               const o = (fns as TObject[])[i].subs[j];
               o.fns = _fns.concat(o.fns);
               // recursive make
-              this.make((o.method + path + o.path) as TVerb, ...o.fns);
+              this.make((o.method + _path + o.path) as TVerb, ...o.fns);
             }
           }
         }

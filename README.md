@@ -1,7 +1,7 @@
 ## Raptor
 
 [![License](https://img.shields.io/:license-mit-blue.svg)](http://badges.mit-license.org)
-[![deno.land](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Flatest-version%2Fx%2Fraptor@0.0.7%2Fmod.ts)](https://deno.land/x/raptor)
+[![deno.land](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Flatest-version%2Fx%2Fraptor@0.0.8%2Fmod.ts)](https://deno.land/x/raptor)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](http://makeapullrequest.com)
 ![deps badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Fdep-count%2Fhttps%2Fdeno.land%2Fx%2Fraptor%2Fmod.ts)
 ![cache badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeno-visualizer.danopia.net%2Fshields%2Fcache-size%2Fhttps%2Fdeno.land%2Fx%2Fraptor%2Fmod.ts)
@@ -20,7 +20,7 @@ Fast router handler for [Deno](https://deno.land/) server and
 
 ```ts
 import { serve } from "https://deno.land/std@0.118.0/http/server.ts";
-import { JsonResponse, raptor } from "https://deno.land/x/raptor@0.0.7/mod.ts";
+import { JsonResponse, raptor } from "https://deno.land/x/raptor@0.0.8/mod.ts";
 
 serve(
   raptor()
